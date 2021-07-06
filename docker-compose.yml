@@ -1,0 +1,72 @@
+version: "3.3"
+networks:
+  dev:
+    name: go-dev
+services:
+  server:
+    deploy:
+      resources:
+        limits:
+          memory: ${MEMORY_LIMIT}
+        reservations:
+          memory: ${MEMORY_RESERVATIONS}
+    image: golang:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /app
+    command:
+      - /bin/bash
+      - -c
+      - |
+        tail -f /dev/null
+    volumes:
+      - .:/app
+    environment:
+      - CDB_DSN='cockroach://root@cockroach1:26257/linkgraph?sslmode=disable'
+      - ES_NODE='http://elastic:9200'
+    networks:
+      - dev
+    restart: always
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elastic
+      - cluster.initial_master_nodes=elastic
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elastic:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - dev
+    restart: always
+#  cockroachdb2:
+  cockroachdb1:
+    hostname: cockroach1
+    image: cockroachdb/cockroach:v21.1.3
+    ports:
+    - 26257:26257
+    - 8080:8080
+    command: start-single-node --insecure --advertise-addr=127.0.0.1:26257
+    volumes:
+      - ./cockroach-data/roach1:/cockroach/cockroach-data
+    networks:
+      - dev
+    restart: always
+#  cockroachdb2:
+#    hostname: cockroach2
+#    image: cockroachdb/cockroach:v21.1.3
+#    command: start --insecure --join=cockroach1,cockroach2
+#    volumes:
+#      - ./cockroach-data/roach2:/cockroach/cockroach-data
+#    networks:
+#      - dev
+#    restart: always
