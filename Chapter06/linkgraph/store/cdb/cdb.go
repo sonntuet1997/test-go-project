@@ -28,6 +28,9 @@ SELECT id, url, retrieved_at FROM links WHERE id >= $1 AND id < $2 AND retrieved
 	edgesQuery = `
 SELECT id, src, dst, updated_at FROM edges WHERE src >= $1 AND src < $2 AND updated_at < $3
 `
+	removeStaleEdgesQuery = `
+DELETE FROM edges WHERE src=$1 AND updated_at < $2
+`
 )
 
 type CockroachDBGraph struct {
@@ -60,7 +63,11 @@ func (c CockroachDBGraph) UpsertEdge(edge *graph.Edge) error {
 }
 
 func (c CockroachDBGraph) RemoveStaleEdges(fromID uuid.UUID, updatedBefore time.Time) error {
-	panic("implement me")
+	_, err := c.db.Exec(removeStaleEdgesQuery, fromID, updatedBefore.UTC())
+	if err != nil {
+		return xerrors.Errorf("RemoveStaleEdges: %w", err)
+	}
+	return nil
 }
 
 func (c CockroachDBGraph) Links(fromID, toID uuid.UUID, retrievedBefore time.Time) (graph.LinkIterator, error) {
