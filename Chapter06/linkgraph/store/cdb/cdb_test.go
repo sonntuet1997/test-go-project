@@ -2,7 +2,6 @@ package cdb
 
 import (
 	"database/sql"
-	"fmt"
 	gc "gopkg.in/check.v1"
 	"os"
 	"test_project/Chapter06/linkgraph/graph/graphtest"
@@ -23,7 +22,6 @@ func (s *DatabaseGraphTestSuite) SetUpTest(c *gc.C) {
 	if dsn == "" {
 		c.Skip("Missing CDB_DSN envvar; skipping cockroachdb-backed graph test suite")
 	}
-	fmt.Printf(dsn)
 	g, err := NewCockroachDBGraph(dsn)
 	c.Assert(err, gc.IsNil)
 	s.SetGraph(g)

@@ -23,8 +23,8 @@ services:
     volumes:
       - .:/app
     environment:
-      - CDB_DSN='cockroach://root@cockroach1:26257/linkgraph?sslmode=disable'
-      - ES_NODE='http://elastic:9200'
+      - CDB_DSN=postgresql://root@cockroach1:26257/linkgraph?sslmode=disable
+      - ES_NODE=http://elastic:9200
     networks:
       - dev
     restart: always

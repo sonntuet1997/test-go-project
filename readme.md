@@ -9,3 +9,7 @@ https://labix.org/gocheck
 
 `/app/Chapter06/linkgraph/store/memory# go test -v -check.f "InMemoryGraphTestSuite.TestUpsertLink"`
 
+
+###Trick 1: cache lib for fast debug by running the following command in Docker container
+
+`go mod vendor`

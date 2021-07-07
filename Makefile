@@ -37,6 +37,11 @@ run-db-migrations: run-cdb-migrations
 run-cdb-migrations: migrate-check-deps check-cdb-env
 	migrate -source file:///app/Chapter06/linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroach,${CDB_DSN})' up
 
+reset-db: migrate-check-deps check-cdb-env
+	migrate -source file:///app/Chapter06/linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroach,${CDB_DSN})' drop -f
+	migrate -source file:///app/Chapter06/linkgraph/store/cdb/migrations -database '$(subst postgresql,cockroach,${CDB_DSN})' up
+
+
 migrate-check-deps:
 	@if [ -z `which migrate` ]; then \
 		echo "[go get] installing golang-migrate cmd with cockroachdb support";\
