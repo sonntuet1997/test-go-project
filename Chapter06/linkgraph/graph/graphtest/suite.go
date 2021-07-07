@@ -98,8 +98,8 @@ func (s *SuiteBase) TestUpsertEdge(c *gc.C) {
 	c.Assert(edge.UpdatedAt.IsZero(), gc.Equals, false, gc.Commentf("UpdatedAt field not set"))
 	other := &graph.Edge{
 		ID:  edge.ID,
-		Src: linkUUIDs[1],
-		Dst: linkUUIDs[2],
+		Src: linkUUIDs[0],
+		Dst: linkUUIDs[1],
 	}
 	err = s.g.UpsertEdge(other)
 	c.Assert(err, gc.IsNil)
@@ -424,4 +424,3 @@ func (s *SuiteBase) assertIteratedLinkIDsMatch(c *gc.C, updatedBefore time.Time,
 	sort.Slice(exp, func(l, r int) bool { return exp[l].String() < exp[r].String() })
 	c.Assert(got, gc.DeepEquals, exp)
 }
-

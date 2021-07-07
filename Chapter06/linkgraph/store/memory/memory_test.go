@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var x = gc.Suite(new(InMemoryGraphTestSuite))
+var _ = gc.Suite(new(InMemoryGraphTestSuite))
 
 func Test(t *testing.T) { gc.TestingT(t) }
 
