@@ -1,9 +1,8 @@
-package memory
+package cdb
 
 import "test_project/Chapter06/linkgraph/graph"
 
 type linkIterator struct {
-	s        *InMemoryGraph
 	links    []*graph.Link
 	curIndex int
 }
@@ -17,8 +16,6 @@ func (l *linkIterator) Next() bool {
 }
 
 func (l *linkIterator) Link() *graph.Link {
-	l.s.mu.RLock()
-	defer l.s.mu.RUnlock()
 
 	link := l.links[l.curIndex-1]
 	lCopy := new(graph.Link)
@@ -37,7 +34,6 @@ func (i *linkIterator) Close() error {
 }
 
 type edgeIterator struct {
-	s        *InMemoryGraph
 	edges    []*graph.Edge
 	curIndex int
 }
@@ -51,8 +47,6 @@ func (e *edgeIterator) Next() bool {
 }
 
 func (e *edgeIterator) Edge() *graph.Edge {
-	e.s.mu.RLock()
-	defer e.s.mu.RUnlock()
 
 	edge := e.edges[e.curIndex-1]
 	eCopy := new(graph.Edge)
