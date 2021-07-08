@@ -3,7 +3,8 @@ module test_project
 go 1.16
 
 require (
-	github.com/gofrs/uuid v4.0.0+incompatible // indirect
+	github.com/blevesearch/bleve v1.0.14
+	github.com/elastic/go-elasticsearch v0.0.0
 	github.com/google/uuid v1.2.0
 	github.com/lib/pq v1.10.2
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1
