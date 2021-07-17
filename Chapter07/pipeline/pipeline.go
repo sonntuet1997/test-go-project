@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"context"
+	"github.com/hashicorp/go-multierror"
 	"golang.org/x/xerrors"
 	"sync"
 )
@@ -71,6 +72,25 @@ func (p *Pipeline) Process(ctx context.Context, source Source, sink Sink) error 
 			wg.Done()
 		}(i)
 	}
-	ctxCancelFn()
-	return nil
+	wg.Add(2)
+	go func() {
+		sourceWorker(pCtx, source, stageCh[0], errCh)
+		close(stageCh[0])
+		wg.Done()
+	}()
+	go func() {
+		sinkWorker(pCtx, sink, stageCh[len(stageCh)-1], errCh)
+		wg.Done()
+	}()
+	go func() {
+		wg.Wait()
+		close(errCh)
+		ctxCancelFn()
+	}()
+	var err error
+	for pErr := range errCh {
+		err = multierror.Append(err, pErr)
+		ctxCancelFn()
+	}
+	return err
 }
