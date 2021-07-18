@@ -28,7 +28,7 @@ func (f fifo) Run(ctx context.Context, s StageParams) {
 			}
 			payloadOut, err := f.proc.Process(ctx, payloadIn)
 			if err != nil {
-				wrapperErr := xerrors.Errorf("pipeline sstage %d: %w", s.StageIndex(), err)
+				wrapperErr := xerrors.Errorf("pipeline stage %d: %w", s.StageIndex(), err)
 				maybeEmitError(wrapperErr, s.Error())
 				return
 			}

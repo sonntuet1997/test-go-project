@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"test_project/Chapter06/linkgraph/graph"
+	"test_project/Chapter06/textindexer/index"
 	"test_project/Chapter07/pipeline"
 )
 
@@ -41,4 +42,63 @@ type URLGetter interface {
 
 type PrivateNetworkDetector interface {
 	IsPrivate(host string) (bool, error)
+}
+
+type Crawler struct {
+	p *pipeline.Pipeline
+}
+type Indexer interface {
+	// Index inserts a new document to the index or updates the index entry
+	// for and existing document.
+	Index(doc *index.Document) error
+}
+
+type Config struct {
+	PrivateNetworkDetector PrivateNetworkDetector
+	URLGetter              URLGetter
+	Graph                  graph.Graph
+	Indexer                Indexer
+	FetchWorkers           int
+}
+
+func assembleCrawlerPipeline(cfg Config) *pipeline.Pipeline {
+	return pipeline.New(
+		pipeline.FixedWorkerPool(
+			newLinkFetcher(cfg.URLGetter, cfg.PrivateNetworkDetector),
+			cfg.FetchWorkers,
+		),
+		pipeline.FIFO(newLinkExtractor(cfg.PrivateNetworkDetector)),
+		pipeline.FIFO(newTextExtractor()),
+		pipeline.Broadcast(
+			newGraphUpdater(cfg.Graph),
+			newTextIndexer(cfg.Indexer),
+		),
+	)
+}
+
+func NewCrawler(cfg Config) *Crawler {
+	return &Crawler{
+		p: assembleCrawlerPipeline(cfg),
+	}
+}
+
+func (c *Crawler) Crawl(ctx context.Context, linkIt graph.LinkIterator) (int, error) {
+	sink := new(countingSink)
+	err := c.p.Process(ctx, &linkSource{linkIt: linkIt}, sink)
+	return sink.getCount(), err
+}
+
+type countingSink struct {
+	count int
+}
+
+func (s *countingSink) Consume(_ context.Context, p pipeline.Payload) error {
+	s.count++
+	return nil
+}
+
+func (s *countingSink) getCount() int {
+	// The broadcast split-stage sends out two payloads for each incoming link
+	// so we need to divide the total count by 2.
+	return s.count / 2
 }
