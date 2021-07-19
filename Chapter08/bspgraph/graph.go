@@ -116,7 +116,7 @@ func (g *Graph) Close() error {
 func (g *Graph) Reset() error {
 	g.superstep = 0
 	for _, v := range g.vertices {
-		for i := 0; i < 2; i++ {
+		for i := 0; i < len(v.msgQueue); i++ {
 			if err := v.msgQueue[i].Close(); err != nil {
 				return xerrors.Errorf("closing message queue #%d for vertex %v: %w", i, v.ID(), err)
 			}
